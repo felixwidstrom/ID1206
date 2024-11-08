@@ -122,15 +122,20 @@ void queue() {
     } else {
         mqd = mq_open(queue, O_RDWR|O_CREAT, 0666, &attr);
         if (mqd == -1) printf("Error: Failed to create message queue");
+
         n = mq_receive(mqd, buffer, size, 0);
-        buffer[n] = '\0';
-        if (buffer == "status") {
-            mq_send(mqd, "OK", strlen("OK"), 0);
+        if (n == -1) {
+            perror("Error: Failed to receive message from parent");
+        } else {
+            buffer[n] = '\0';
+            printf("Received: \"%s\"\n", buffer);
+
+            if (strcmp(buffer, "status") == 0) {
+                mq_send(mqd, "OK", strlen("OK"), 0);
+            }
         }
+
         mq_close(mqd);
-
-        printf("Received: \"%s\"", buffer);
-
         _exit(16);
     }
 
