@@ -125,7 +125,7 @@ void queue() {
 
         n = mq_receive(mqd, buffer, size, 0);
         if (n == -1) {
-            perror("Error: Failed to receive message in parent");
+            perror("Error: Failed to receive message from parent");
         } else {
             buffer[n] = '\0';
             printf("Received: \"%s\"\n", buffer);
