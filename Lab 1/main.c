@@ -92,7 +92,7 @@ void performance() {
 
 void queue() {
     const char *queue = "/mqueue";
-    const char *msg = "status";
+    const char *msg[] = {"status", "child_pid", "stop"};
     const int size = 256;
 
     char buffer[size];
@@ -112,7 +112,12 @@ void queue() {
         sleep(1);
         mqd = mq_open(queue, O_RDWR);
         if (mqd == -1) printf("Error: Failed to open message queue");
-        mq_send(mqd, msg, strlen(msg), 0);
+
+        for (int i = 0; i < 3; i++) {
+            mq_send(mqd, msg[i], strlen(msg[i]), 0);
+            sleep(1);
+        }
+
         n = mq_receive(mqd, buffer, size, 0);
         buffer[n] = '\0';
         mq_close(mqd);
@@ -123,18 +128,25 @@ void queue() {
         mqd = mq_open(queue, O_RDWR|O_CREAT, 0666, &attr);
         if (mqd == -1) printf("Error: Failed to create message queue");
 
-        n = mq_receive(mqd, buffer, size, 0);
-        if (n == -1) {
-            perror("Error: Failed to receive message from parent");
-        } else {
-            buffer[n] = '\0';
-            printf("Received: \"%s\"\n", buffer);
-
-            if (strcmp(buffer, "status") == 0) {
-                mq_send(mqd, "OK", strlen("OK"), 0);
+        while(1) {
+            n = mq_receive(mqd, buffer, size, 0);
+            if (n == -1) {
+                perror("Error: Failed to receive message in parent");
+            } else {
+                buffer[n] = '\0';
+                printf("Received: \"%s\"\n", buffer);
+                if (strcmp(buffer, "status") == 0) {
+                    mq_send(mqd, "OK", strlen("OK"), 0);
+                } else if (strcmp(buffer, "child_pid") == 0) {
+                    char child_pid[20];
+                    sprintf(child_pid, "%d", getpid());
+                    mq_send(mqd, child_pid, strlen(child_pid), 0);
+                } else if (strcmp(buffer, "stop") == 0) {
+                    mq_send(mqd, "STOPPING", strlen("STOPPING"), 0);
+                    break;
+                }
             }
         }
-
         mq_close(mqd);
         _exit(16);
     }
@@ -151,7 +163,7 @@ int main(int argc, char const *argv[])
     //     performance();
     // }
     // clock_gettime(CLOCK_THREAD_CPUTIME_ID, &end);
-    // printf("Time (ns): %ld", (1000000000 * (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec)) / 1000);
+    // printf("Time (ns): %ld", (1000000000 * (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec)) / 1000); 
     queue();
 
     return 0;
