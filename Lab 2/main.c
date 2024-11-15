@@ -67,7 +67,6 @@ const int nthr = 1000;
 typedef struct {
     /* MEMBERS TO BE DEFINED */
     atomic_flag value;
-    struct process *list;
 } mysemaphore_t;
 
 mysemaphore_t sem;
