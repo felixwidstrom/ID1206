@@ -59,7 +59,7 @@ void montecarlo() {
     }
 }
 
-// Assignment 2
+// Assignment 2 & 3
 
 int counter = 0;
 const int nthr = 1000;
@@ -73,13 +73,24 @@ mysemaphore_t sem;
 
 int sem_init (mysemaphore_t *s) {
     /* FUNCTION TO BE IMPLEMENTED */
-    ATOMIC_VAR_INIT(s);
+    ATOMIC_VAR_INIT(s->value);
     return 0;
 }
 
+// Assignment 2 function
+// int sem_wait (mysemaphore_t *s) {
+//     /* FUNCTION TO BE IMPLEMENTED */
+//     while(atomic_flag_test_and_set(&s->value));
+//     return 0;
+// }
+
 int sem_wait (mysemaphore_t *s) {
     /* FUNCTION TO BE IMPLEMENTED */
-    while(atomic_flag_test_and_set(&s->value));
+    int delay = 1;
+    while(atomic_flag_test_and_set(&s->value)) {
+        usleep(delay);
+        delay *= 2;
+    }
     return 0;
 }
 
