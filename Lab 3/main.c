@@ -8,13 +8,11 @@
 #define NUM_FRAMES 256
 #define TLB_SIZE 16
 
-// Structures
 typedef struct {
     int page_number;
     int frame_number;
 } TLBEntry;
 
-// Global Variables
 int page_table[NUM_PAGES];
 bool frame_used[NUM_FRAMES];
 TLBEntry tlb[TLB_SIZE];
@@ -25,48 +23,38 @@ int tlb_hits = 0;
 int tlb_misses = 0;
 int address_count = 0;
 
-unsigned char physical_memory[NUM_FRAMES][PAGE_SIZE]; // Physical memory array
+unsigned char physical_memory[NUM_FRAMES][PAGE_SIZE];
 
-// Function Prototypes
 int search_tlb(int page_number);
 void update_tlb(int page_number, int frame_number);
 int get_free_frame();
-int translate_address(int logical_address);
+int translate_address(int virtual_address);
 void load_page_to_frame(int page_number, int frame_number);
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
-        return EXIT_FAILURE;
-    }
-
-    // Initialize page table and frame usage
     memset(page_table, -1, sizeof(page_table));
     memset(frame_used, false, sizeof(frame_used));
 
-    // Open the input file
     FILE *input_file = fopen(argv[1], "r");
     if (!input_file) {
         perror("Error opening file");
-        return EXIT_FAILURE;
+        return 1;
     }
 
-    // Read logical addresses
-    int logical_address;
-    while (fscanf(input_file, "%d", &logical_address) != EOF) {
+    int virtual_address;
+    while (fscanf(input_file, "%d", &virtual_address) != EOF) {
         address_count++;
-        translate_address(logical_address);
+        translate_address(virtual_address);
     }
 
     fclose(input_file);
 
-    // Print statistics
     printf("Number of addresses: %d\n", address_count);
     printf("Number of page faults: %d\n", page_faults);
     printf("Number of TLB hits: %d\n", tlb_hits);
     printf("Number of TLB misses: %d\n", tlb_misses);
 
-    return EXIT_SUCCESS;
+    return 0;
 }
 
 int search_tlb(int page_number) {
@@ -95,17 +83,15 @@ int get_free_frame() {
 }
 
 void load_page_to_frame(int page_number, int frame_number) {
-    // Simulate loading the page by filling the frame with dummy data
     for (int i = 0; i < PAGE_SIZE; i++) {
         physical_memory[frame_number][i] = page_number;
     }
 }
 
-int translate_address(int logical_address) {
-    int page_number = (logical_address / PAGE_SIZE) % NUM_PAGES;
-    int offset = logical_address % PAGE_SIZE;
+int translate_address(int virtual_address) {
+    int page_number = (virtual_address / PAGE_SIZE) % NUM_PAGES;
+    int offset = virtual_address % PAGE_SIZE;
 
-    // Check TLB
     int frame_number = search_tlb(page_number);
     if (frame_number != -1) {
         tlb_hits++;
@@ -127,12 +113,11 @@ int translate_address(int logical_address) {
             load_page_to_frame(page_number, frame_number);
         }
 
-        // Update TLB
         update_tlb(page_number, frame_number);
     }
 
     int physical_address = frame_number * PAGE_SIZE + offset;
     unsigned char value = physical_memory[frame_number][offset];
-    printf("Logical Address: %d, Physical Address: %d, Value: %d\n", logical_address, physical_address, value);
+    printf("Virtual Address: %d, Physical Address: %d, Value: %d\n", virtual_address, physical_address, value);
     return physical_address;
 }
