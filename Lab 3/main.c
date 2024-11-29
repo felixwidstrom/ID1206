@@ -25,11 +25,14 @@ int tlb_hits = 0;
 int tlb_misses = 0;
 int address_count = 0;
 
+unsigned char physical_memory[NUM_FRAMES][PAGE_SIZE]; // Physical memory array
+
 // Function Prototypes
 int search_tlb(int page_number);
 void update_tlb(int page_number, int frame_number);
 int get_free_frame();
 int translate_address(int logical_address);
+void load_page_to_frame(int page_number, int frame_number);
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -91,6 +94,13 @@ int get_free_frame() {
     return -1;
 }
 
+void load_page_to_frame(int page_number, int frame_number) {
+    // Simulate loading the page by filling the frame with dummy data
+    for (int i = 0; i < PAGE_SIZE; i++) {
+        physical_memory[frame_number][i] = page_number;
+    }
+}
+
 int translate_address(int logical_address) {
     int page_number = (logical_address / PAGE_SIZE) % NUM_PAGES;
     int offset = logical_address % PAGE_SIZE;
@@ -114,6 +124,7 @@ int translate_address(int logical_address) {
             }
 
             page_table[page_number] = frame_number;
+            load_page_to_frame(page_number, frame_number);
         }
 
         // Update TLB
@@ -121,6 +132,7 @@ int translate_address(int logical_address) {
     }
 
     int physical_address = frame_number * PAGE_SIZE + offset;
-    printf("Logical Address: %d, Physical Address: %d\n", logical_address, physical_address);
+    unsigned char value = physical_memory[frame_number][offset];
+    printf("Logical Address: %d, Physical Address: %d, Value: %d\n", logical_address, physical_address, value);
     return physical_address;
 }
