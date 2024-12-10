@@ -80,7 +80,7 @@ void write_data(int nio, int nbuf) { // Assignment 2
     struct timeval start, end;
     gettimeofday(&start, NULL);
 
-    for (int i = 0; i < ARRAY_SIZE/nio; i++) {
+    for (i = 0; i < ARRAY_SIZE/nio; i++) {
         fputs(data[i], file);
     }
 
