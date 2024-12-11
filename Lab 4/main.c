@@ -57,7 +57,7 @@ void write_data(int nio, int nbuf) { // Assignment 2
 
     char buffer[nbuf];
 
-    FILE* file = fopen("output", "w");
+    FILE* file = fopen("output.txt", "w");
     if(file == NULL) {
         perror("fopen error");
         exit(1);
@@ -101,7 +101,6 @@ void write_data(int nio, int nbuf) { // Assignment 2
 int main(int argc, char const *argv[])
 {
     files("test");
-    // buffering();
 
     // Assignment 2
     const int nio_min = (1 << 10);
