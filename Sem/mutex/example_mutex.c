@@ -61,8 +61,6 @@ static void __exit example_mutex_exit(void)
 {
     pr_info("example_mutex exit\n");
 
-    kthread_stop(thread_1);
-    kthread_stop(thread_2);
 }
 
 module_init(example_mutex_init);
